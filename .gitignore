@@ -1,0 +1,40 @@
+# data and artifacts
+# top-level folders only (a leading / anchors to the repo root, so
+# backend/src/zeitnot/data/ and .../models/ are still tracked)
+/data/
+/models/
+/artifacts/
+/mlruns/
+/engines/
+*.parquet
+*.zst
+*.pgn
+stockfish*.exe
+*.nnue
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.onnx
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# node
+node_modules/
+frontend/dist/
+
+# env / local
+.env
+
+# Claude Code context/config (local only)
+CLAUDE.md
+CLAUDE.local.md
+.claude/
+docs/
+.DS_Store

@@ -1,0 +1,68 @@
+# Pipeline parameters. Loaded and validated by zeitnot.config.PipelineConfig.
+# Paths and machine-specific settings live in env vars / .env (ZEITNOT_*), not here.
+# Values marked "placeholder" have no spec default yet; revisit when the relevant step is built.
+
+seed: 20261001
+
+time_controls:
+  # Lichess convention: estimated duration = base + increment_weight * increment.
+  # Class = first class whose max_est_duration_s >= estimate (verified against scalachess Speed.scala).
+  increment_weight: 40
+  classes:
+    - {name: ultrabullet, max_est_duration_s: 29}
+    - {name: bullet, max_est_duration_s: 179}
+    - {name: blitz, max_est_duration_s: 479}
+    - {name: rapid, max_est_duration_s: 1499}
+    - {name: classical, max_est_duration_s: 21599}
+  supported: [blitz, rapid]
+  collected: [blitz, rapid, classical]  # classical kept for later
+  reference:                         # representative time control per class; to be confirmed from data
+    blitz: {base_s: 300, increment_s: 0}
+    rapid: {base_s: 600, increment_s: 0}
+
+clock:
+  premove_max_s: 0          # placeholder: time spent <= this marks premove_suspect (Lichess clocks are whole seconds)
+  low_clock_s:              # placeholder: own clock below this marks low_clock
+    blitz: 10
+    rapid: 20
+    classical: 30
+
+acceptability:
+  tau_win_pct: 5.0          # max win% loss for an acceptable move
+  win_pct_k: 0.00368208     # Lichess multiplier (verified: scalachess core/src/main/scala/eval.scala)
+  cp_ceiling: 1000          # cp clipped to +/- this; mate scores map to it (Lichess Cp.CEILING)
+
+filter:
+  min_elo: 600
+  max_elo: 2400
+  require_clock: true
+
+sampling:
+  positions_per_game: 3     # k
+  min_ply: 10               # opening cutoff for the Trainer pool
+  rating_band_width: 100
+  decisive_win_pct: 90.0
+  decisive_max_share: 0.15  # placeholder
+  target_positions: 200000
+
+engine:
+  multipv: 5
+  nodes: 1000000            # starting point; measure in 0.11
+  threads_per_worker: 1
+  hash_mb_per_worker: 64
+  workers: 8
+
+budget:
+  quantile: 0.5
+  strict_quantile: 0.3
+  p_inf_min: 0.2
+  p_inf_max: 0.9
+  clip_s:
+    blitz: {min: 3, max: 60}
+    rapid: {min: 3, max: 180}
+  grace_s: 0.5
+  rating_grid: {min: 600, max: 2400, step: 50}
+
+target:
+  rating_offset: 300        # target rating = user rating + offset
+  source_rating_window: 200
