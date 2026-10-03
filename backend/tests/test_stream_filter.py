@@ -142,3 +142,8 @@ def test_run_writes_parts_report_and_resumes(
     # A different chunk size would misalign chunk indices: refuse.
     with pytest.raises(SystemExit):
         run(zst, out, "2026-08", cfg, workers=1, chunk_mb=2, max_in_flight=2)
+
+    # Changed filter settings would silently mix old and new parts: refuse.
+    stricter = cfg.model_copy(update={"filter": cfg.filter.model_copy(update={"max_elo": 2000})})
+    with pytest.raises(SystemExit):
+        run(zst, out, "2026-08", stricter, **kwargs)

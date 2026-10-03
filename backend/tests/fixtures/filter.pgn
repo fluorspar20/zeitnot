@@ -84,8 +84,8 @@
 [Result "1-0"]
 [UTCDate "2026.08.01"]
 [UTCTime "10:00:06"]
-[WhiteElo "2650"]
-[BlackElo "2500"]
+[WhiteElo "3600"]
+[BlackElo "3550"]
 [TimeControl "300+0"]
 [Termination "Normal"]
 

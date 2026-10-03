@@ -93,16 +93,21 @@ def process_chunk(
     return stats
 
 
-def _check_manifest(out_dir: Path, input_path: Path, chunk_mb: int) -> None:
-    """Chunk indices are only comparable across runs with the same input and chunk size."""
+def _check_manifest(out_dir: Path, input_path: Path, chunk_mb: int, cfg: PipelineConfig) -> None:
+    """Finished parts may only be reused by a run with the same input, chunk size and filter."""
     manifest = out_dir / "_manifest.json"
-    current = {"input": input_path.name, "chunk_mb": chunk_mb}
+    current = {
+        "input": input_path.name,
+        "chunk_mb": chunk_mb,
+        "filter": cfg.filter.model_dump(),
+        "time_controls": cfg.time_controls.model_dump(),
+    }
     if manifest.exists():
         previous = json.loads(manifest.read_text(encoding="utf-8"))
         if previous != current:
             raise SystemExit(
-                f"{out_dir} was produced with {previous}, not {current}; "
-                "use a fresh output directory or the same settings"
+                f"{out_dir} was produced with different settings than this run "
+                f"(previous: {previous}); use a fresh output directory or the same settings"
             )
     else:
         write_atomic_json(manifest, current)
@@ -168,7 +173,7 @@ def run(
 ) -> dict[str, Any]:
     out_dir = out_root / f"month={month}"
     out_dir.mkdir(parents=True, exist_ok=True)
-    _check_manifest(out_dir, input_path, chunk_mb)
+    _check_manifest(out_dir, input_path, chunk_mb, cfg)
 
     t0 = time.perf_counter()
     done = skipped = games = bytes_done = 0

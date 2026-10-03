@@ -37,8 +37,10 @@ acceptability:
   cp_ceiling: 1000          # cp clipped to +/- this; mate scores map to it (Lichess Cp.CEILING)
 
 filter:
-  min_elo: 600
-  max_elo: 2400
+  # Players of every rating are served, so keep the full Lichess range (floor 400, top ~3100);
+  # these bounds are only a sanity check.
+  min_elo: 400
+  max_elo: 3500
   require_clock: true
   min_month: "2019-01"      # older months lack a settled rapid rating pool
   exclude_titles: [BOT]
@@ -80,7 +82,7 @@ budget:
     blitz: {min: 3, max: 60}
     rapid: {min: 3, max: 180}
   grace_s: 0.5
-  rating_grid: {min: 600, max: 2400, step: 50}
+  rating_grid: {min: 400, max: 3000, step: 50}
 
 target:
   rating_offset: 300        # target rating = user rating + offset
