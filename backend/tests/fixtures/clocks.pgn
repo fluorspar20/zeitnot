@@ -1,0 +1,69 @@
+[Event "Rated Blitz game"]
+[Site "https://lichess.org/fixture1"]
+[Case "increment"]
+[White "w"]
+[Black "b"]
+[Result "*"]
+[TimeControl "180+2"]
+
+1. e4 { [%clk 0:03:00] } 1... e5 { [%clk 0:03:00] } 2. Nf3 { [%clk 0:02:57] } 2... Nc6 { [%clk 0:02:59] } 3. Bb5 { [%clk 0:02:58] } 3... a6 { [%clk 0:02:50] } 4. Ba4 { [%clk 0:02:40] } *
+
+[Event "Rated Blitz tournament https://lichess.org/tournament/fixture"]
+[Site "https://lichess.org/fixture2"]
+[Case "berserk"]
+[White "w"]
+[Black "b"]
+[Result "*"]
+[TimeControl "180+2"]
+
+1. d4 { [%clk 0:01:30] } 1... d5 { [%clk 0:03:00] } 2. c4 { [%clk 0:01:26] } 2... e6 { [%clk 0:02:58] } 3. Nc3 { [%clk 0:01:20] } *
+
+[Event "Rated Blitz game"]
+[Site "https://lichess.org/fixture3"]
+[Case "time_added"]
+[White "w"]
+[Black "b"]
+[Result "*"]
+[TimeControl "300+0"]
+
+1. e4 { [%clk 0:05:00] } 1... c5 { [%clk 0:05:00] } 2. Nf3 { [%clk 0:04:55] } 2... d6 { [%clk 0:05:10] } 3. d4 { [%clk 0:04:50] } 3... cxd4 { [%clk 0:05:02] } *
+
+[Event "Rated Bullet game"]
+[Site "https://lichess.org/fixture4"]
+[Case "noise"]
+[White "w"]
+[Black "b"]
+[Result "*"]
+[TimeControl "120+1"]
+
+1. e4 { [%clk 0:02:00] } 1... e5 { [%clk 0:02:00] } 2. Nf3 { [%clk 0:02:02] } 2... Nc6 { [%clk 0:01:58] } *
+
+[Event "Rated Blitz game"]
+[Site "https://lichess.org/fixture5"]
+[Case "low_clock"]
+[White "w"]
+[Black "b"]
+[Result "*"]
+[TimeControl "180+0"]
+
+1. e4 { [%clk 0:03:00] } 1... e5 { [%clk 0:03:00] } 2. Nf3 { [%clk 0:00:12] } 2... Nc6 { [%clk 0:02:00] } 3. Bc4 { [%clk 0:00:10] } 3... Bc5 { [%clk 0:01:59] } 4. c3 { [%clk 0:00:09] } 4... Nf6 { [%clk 0:01:50] } 5. d4 { [%clk 0:00:09] } *
+
+[Event "Rated Blitz game"]
+[Site "https://lichess.org/fixture6"]
+[Case "single_move"]
+[White "w"]
+[Black "b"]
+[Result "1-0"]
+[TimeControl "180+0"]
+
+1. e4 { [%clk 0:03:00] } 1-0
+
+[Event "Rated Blitz game"]
+[Site "https://lichess.org/fixture7"]
+[Case "missing_clock"]
+[White "w"]
+[Black "b"]
+[Result "*"]
+[TimeControl "180+0"]
+
+1. e4 { [%clk 0:03:00] } 1... e5 2. Nf3 { [%clk 0:02:58] } *

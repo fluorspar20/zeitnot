@@ -9,6 +9,7 @@
 *.parquet
 *.zst
 *.pgn
+!backend/tests/fixtures/**
 stockfish*.exe
 *.nnue
 *.pt

@@ -22,7 +22,9 @@ def find_stockfish(settings: Settings) -> Path:
     """``ZEITNOT_STOCKFISH_PATH`` if set, else the first ``stockfish*.exe`` under ``engines/``."""
     if settings.stockfish_path is not None:
         if not settings.stockfish_path.is_file():
-            raise StockfishNotFoundError(f"ZEITNOT_STOCKFISH_PATH not found: {settings.stockfish_path}")
+            raise StockfishNotFoundError(
+                f"ZEITNOT_STOCKFISH_PATH not found: {settings.stockfish_path}"
+            )
         return settings.stockfish_path
     candidates = sorted((settings.root_dir / "engines").glob("**/stockfish*.exe"))
     if not candidates:

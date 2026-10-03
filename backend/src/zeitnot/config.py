@@ -79,6 +79,8 @@ class TimeControlConfig(_Strict):
 
 class ClockConfig(_Strict):
     premove_max_s: float = Field(ge=0)
+    noise_tolerance_s: float = Field(ge=0)
+    berserk_tolerance_s: float = Field(ge=0)
     low_clock_s: dict[TcClass, float]
 
 

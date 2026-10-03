@@ -21,7 +21,11 @@ time_controls:
     rapid: {base_s: 600, increment_s: 0}
 
 clock:
-  premove_max_s: 0          # placeholder: time spent <= this marks premove_suspect (Lichess clocks are whole seconds)
+  # Lichess %clk is rounded to the nearest second, so time spent is accurate to < 1 s.
+  premove_max_s: 0          # placeholder: time spent <= this marks premove_suspect
+  noise_tolerance_s: 1      # negative time spent down to -this is rounding/lag noise (clipped to 0);
+                            # below it, time was added to the clock ("+15 s") and the move is flagged
+  berserk_tolerance_s: 1    # first clock within this of base/2 marks a berserk start (no increment)
   low_clock_s:              # placeholder: own clock below this marks low_clock
     blitz: 10
     rapid: 20
