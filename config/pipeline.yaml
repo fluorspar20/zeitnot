@@ -59,9 +59,16 @@ puzzles:
   report_band_width: 200   # rating band width for the join report tables
 
 sampling:
-  positions_per_game: 3     # k
+  positions_per_game: 3     # k: limits within-game correlation
   min_ply: 10               # opening cutoff for the Trainer pool
-  rating_band_width: 100
+  rating_band_width: 100    # strata: class x mover's rating band x ply bucket
+  ply_bucket_edges: [20, 40, 60]   # buckets [min_ply,20) [20,40) [40,60) [60,inf)
+  exclude_premove_suspect: true    # instant moves were decided on the opponent's time
+  exclude_berserk: true            # halved clock and no increment: a different time context
+  phase:                    # rough material-based phase of a sampled position (rule-based v1)
+    endgame_max_pieces: 6   # majors + minors on the board (both sides) <= this -> endgame
+    opening_min_pieces: 11  # >= this many majors + minors and ply < opening_max_ply -> opening
+    opening_max_ply: 30
   decisive_win_pct: 90.0
   decisive_max_share: 0.15  # placeholder
   target_positions: 200000

@@ -119,10 +119,20 @@ class PuzzlesConfig(_Strict):
     report_band_width: PositiveInt
 
 
+class PhaseConfig(_Strict):
+    endgame_max_pieces: int = Field(ge=0)
+    opening_min_pieces: int = Field(ge=0)
+    opening_max_ply: PositiveInt
+
+
 class SamplingConfig(_Strict):
     positions_per_game: PositiveInt
     min_ply: int = Field(ge=0)
     rating_band_width: PositiveInt
+    ply_bucket_edges: list[PositiveInt]
+    exclude_premove_suspect: bool
+    exclude_berserk: bool
+    phase: PhaseConfig
     decisive_win_pct: float = Field(gt=50, le=100)
     decisive_max_share: float = Field(ge=0, le=1)
     target_positions: PositiveInt
