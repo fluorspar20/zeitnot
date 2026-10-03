@@ -115,6 +115,10 @@ class ParseConfig(_Strict):
     workers: PositiveInt
 
 
+class PuzzlesConfig(_Strict):
+    report_band_width: PositiveInt
+
+
 class SamplingConfig(_Strict):
     positions_per_game: PositiveInt
     min_ply: int = Field(ge=0)
@@ -189,6 +193,7 @@ class PipelineConfig(_Strict):
     filter: FilterConfig
     stream: StreamConfig
     parse: ParseConfig
+    puzzles: PuzzlesConfig
     sampling: SamplingConfig
     engine: EngineConfig
     budget: BudgetConfig

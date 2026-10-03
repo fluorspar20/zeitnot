@@ -53,6 +53,9 @@ stream:
 parse:
   workers: 12               # CPU-bound (python-chess move replay); leave a few cores free
 
+puzzles:
+  report_band_width: 200   # rating band width for the join report tables
+
 sampling:
   positions_per_game: 3     # k
   min_ply: 10               # opening cutoff for the Trainer pool

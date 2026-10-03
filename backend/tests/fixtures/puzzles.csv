@@ -1,0 +1,6 @@
+PuzzleId,FEN,Moves,Rating,RatingDeviation,Popularity,NbPlays,Themes,GameUrl,OpeningTags,DailyDate
+PzMate,r1bqkbnr/pppp1ppp/2n5/4p2Q/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 3 3,g8f6 h5f7,1100,75,90,1000,mate mateIn1 oneMove opening,https://lichess.org/keepBltz/black#6,,
+PzMiss,rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1,d7d5 g1f3 g8f6 c2c4,1500,75,90,1000,advantage short,https://lichess.org/keepSwis/black#2,,
+PzBadSetup,rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1,d2d4 d7d5,1300,75,90,1000,short,https://lichess.org/keepClas#1,,
+PzNoReply,rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1,c7c5 g1f3,1400,75,90,1000,short,https://lichess.org/keepClas/black#2,,
+PzOther,rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1,e2e4 e7e5,1200,75,90,1000,short,https://lichess.org/zzzzzzzz#1,,
