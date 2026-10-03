@@ -94,12 +94,21 @@ class FilterConfig(_Strict):
     min_elo: PositiveInt
     max_elo: PositiveInt
     require_clock: bool
+    min_month: str = Field(pattern=r"^\d{4}-\d{2}$")
+    exclude_titles: list[str]
+    exclude_terminations: list[str]
 
     @model_validator(mode="after")
     def _check(self) -> Self:
         if self.min_elo >= self.max_elo:
             raise ValueError("filter.min_elo must be < max_elo")
         return self
+
+
+class StreamConfig(_Strict):
+    chunk_mb: PositiveInt
+    workers: PositiveInt
+    max_in_flight: PositiveInt
 
 
 class SamplingConfig(_Strict):
@@ -174,6 +183,7 @@ class PipelineConfig(_Strict):
     clock: ClockConfig
     acceptability: AcceptabilityConfig
     filter: FilterConfig
+    stream: StreamConfig
     sampling: SamplingConfig
     engine: EngineConfig
     budget: BudgetConfig

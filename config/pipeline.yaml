@@ -40,6 +40,15 @@ filter:
   min_elo: 600
   max_elo: 2400
   require_clock: true
+  min_month: "2019-01"      # older months lack a settled rapid rating pool
+  exclude_titles: [BOT]
+  exclude_terminations: [Abandoned]
+
+stream:
+  chunk_mb: 64              # decompressed text per work unit (cut at a game boundary)
+  workers: 4                # filter processes; the single decompressing main process is the
+                            # bottleneck (~80k games/s measured with 3 or 10 workers alike)
+  max_in_flight: 8          # chunks queued or running at once; bounds memory
 
 sampling:
   positions_per_game: 3     # k
