@@ -138,6 +138,10 @@ class SamplingConfig(_Strict):
     target_positions: PositiveInt
 
 
+class EvalDbConfig(_Strict):
+    min_knodes: PositiveInt
+
+
 class EngineConfig(_Strict):
     multipv: PositiveInt
     nodes: PositiveInt
@@ -205,6 +209,7 @@ class PipelineConfig(_Strict):
     parse: ParseConfig
     puzzles: PuzzlesConfig
     sampling: SamplingConfig
+    evaldb: EvalDbConfig
     engine: EngineConfig
     budget: BudgetConfig
     target: TargetConfig

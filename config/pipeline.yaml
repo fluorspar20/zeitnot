@@ -73,6 +73,10 @@ sampling:
   decisive_max_share: 0.15  # placeholder
   target_positions: 200000
 
+evaldb:
+  min_knodes: 1000          # ignore database evals searched with fewer kilo-nodes than this
+                            # (our own labels use engine.nodes = 1000 knodes)
+
 engine:
   multipv: 5
   nodes: 1000000            # starting point; measure in 0.11

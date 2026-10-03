@@ -57,3 +57,36 @@ def iter_game_chunks(path: Path, chunk_bytes: int) -> Iterator[tuple[int, bytes]
 def split_games(text: str) -> list[str]:
     """Split a chunk of PGN text into individual game texts."""
     return [g for g in _SPLIT_RE.split(text) if g.strip()]
+
+
+def iter_line_chunks(path: Path, chunk_bytes: int) -> Iterator[tuple[int, bytes]]:
+    """Yield ``(index, data)``: ~``chunk_bytes`` of a decompressed line file, whole lines only.
+
+    Same guarantees as :func:`iter_game_chunks`: deterministic boundaries, and a
+    truncated input simply ends early (its last partial line is dropped).
+    """
+    index = 0
+    buffer = bytearray()
+    with path.open("rb") as raw:
+        reader = zstandard.ZstdDecompressor().stream_reader(raw, read_across_frames=True)
+        while True:
+            try:
+                block = reader.read(_READ_SIZE)
+            except zstandard.ZstdError as e:
+                log.warning("decompression stopped early (truncated input?): %s", e)
+                block = b""
+            if not block:
+                break
+            buffer += block
+            while len(buffer) >= chunk_bytes:
+                cut = buffer.rfind(b"\n", 0, chunk_bytes) + 1
+                if cut == 0:
+                    cut = buffer.find(b"\n") + 1
+                if cut == 0:
+                    break  # no complete line yet; keep reading
+                yield index, bytes(buffer[:cut])
+                index += 1
+                del buffer[:cut]
+    cut = buffer.rfind(b"\n") + 1
+    if cut:
+        yield index, bytes(buffer[:cut])
