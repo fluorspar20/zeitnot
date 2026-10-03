@@ -171,26 +171,34 @@ def position_id(epd: str) -> str:
 def replay_positions(
     sampled: pl.DataFrame, interim: Path, month: str, cfg: PipelineConfig
 ) -> pl.DataFrame:
-    """Stage 3: FEN/EPD, phase and PGN evals for the sampled plies of one month."""
+    """Stage 3: FEN/EPD, phase, PGN evals and decision context for one month's sampled plies.
+
+    The context columns describe how "prepared" the mover could have been: a move can be
+    quick because it was worked out during the player's previous think or on the
+    opponent's time, not because the position is easy.
+    """
     wanted = sampled.filter(pl.col("month") == month).select("game_id", "ply")
     needed: dict[str, set[int]] = {}
     for game_id, ply in wanted.iter_rows():
         needed.setdefault(game_id, set()).add(ply)
     games = (
         pl.scan_parquet(interim / "moves" / f"month={month}" / "part-*.parquet")
-        .select("game_id", "ply", "uci", "eval_white_cp", "eval_white_mate")
+        .select("game_id", "ply", "uci", "time_spent_s", "eval_white_cp", "eval_white_mate")
         .join(wanted.select("game_id").unique().lazy(), on="game_id", how="semi")
         .sort("game_id", "ply")
         .group_by("game_id", maintain_order=True)
-        .agg("uci", "eval_white_cp", "eval_white_mate")
+        .agg("uci", "time_spent_s", "eval_white_cp", "eval_white_mate")
         .collect()
     )
     rows = []
-    for game_id, ucis, cps, mates in games.iter_rows():
+    for game_id, ucis, times, cps, mates in games.iter_rows():
         plies = needed[game_id]
         last = max(plies)
         board = chess.Board()
+        prev_capture_square: int | None = None  # where the previous move captured, if it did
         for ply, uci in enumerate(ucis, start=1):
+            move = chess.Move.from_uci(uci)
+            is_capture = board.is_capture(move)
             if ply in plies:
                 epd = board.epd(en_passant="legal")
                 rows.append(
@@ -200,11 +208,17 @@ def replay_positions(
                         cps[ply - 2] if ply >= 2 else None,
                         mates[ply - 2] if ply >= 2 else None,
                         cps[ply - 1], mates[ply - 1],
+                        times[ply - 3] if ply >= 3 else None,
+                        times[ply - 2] if ply >= 2 else None,
+                        board.legal_moves.count(), board.is_check(), is_capture,
+                        is_capture and move.to_square == prev_capture_square,
+                        prev_capture_square is not None,
                     )
                 )  # fmt: skip
             if ply == last:
                 break
-            board.push(chess.Move.from_uci(uci))
+            prev_capture_square = move.to_square if is_capture else None
+            board.push(move)
     return pl.DataFrame(
         rows,
         schema={
@@ -212,6 +226,9 @@ def replay_positions(
             "epd": pl.String, "phase": pl.String,
             "eval_before_white_cp": pl.Int16, "eval_before_white_mate": pl.Int16,
             "eval_after_white_cp": pl.Int16, "eval_after_white_mate": pl.Int16,
+            "prev_own_time_spent_s": pl.Float32, "opp_prev_time_spent_s": pl.Float32,
+            "n_legal_moves": pl.Int16, "in_check": pl.Boolean, "is_capture": pl.Boolean,
+            "is_recapture": pl.Boolean, "opp_prev_was_capture": pl.Boolean,
         },
         orient="row",
     )  # fmt: skip
@@ -268,6 +285,13 @@ def run(
             "eval_before_white_mate",
             "eval_after_white_cp",
             "eval_after_white_mate",
+            "prev_own_time_spent_s",
+            "opp_prev_time_spent_s",
+            "n_legal_moves",
+            "in_check",
+            "is_capture",
+            "is_recapture",
+            "opp_prev_was_capture",
             "rating_band",
             "ply_bucket",
             "stratum_candidates",

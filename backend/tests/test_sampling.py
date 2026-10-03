@@ -12,6 +12,7 @@ from zeitnot.positions.sampling import (
     game_candidates,
     position_id,
     position_phase,
+    replay_positions,
     run,
 )
 
@@ -191,3 +192,42 @@ def test_stage_two_randomness_is_independent_of_stage_one(
     )  # fmt: skip
     assert picked.height < n_eligible
     assert 0.4 < picked["u"].mean() < 0.6
+
+
+def test_decision_context_columns(tmp_path: Path, cfg: PipelineConfig) -> None:
+    # 300+0. 1. e4 d5 2. exd5 Qxd5 3. Nc3 Qa5. White clocks 300, 297, 290; Black 300, 295, 294.
+    # T: ply 3 = 3 (exd5), ply 4 = 5 (Qxd5), ply 5 = 7 (Nc3), ply 6 = 1 (Qa5).
+    sans = ["e4", "d5", "exd5", "Qxd5", "Nc3", "Qa5"]
+    clocks = [300, 300, 297, 295, 290, 294]
+    movetext = " ".join(f"{s} {{ [%clk {_clk(c)}] }}" for s, c in zip(sans, clocks, strict=True))
+    cols = parse_game_moves("ctxgame1", movetext + " *", TimeControl(300, 0), "blitz", cfg.clock)
+    part = tmp_path / "moves" / "month=2026-08" / "part-000000.parquet"
+    part.parent.mkdir(parents=True)
+    pl.DataFrame(cols, schema=MOVES_SCHEMA).write_parquet(part)
+    sampled = pl.DataFrame(
+        {"game_id": ["ctxgame1"] * 4, "ply": [3, 4, 5, 6], "month": ["2026-08"] * 4},
+        schema_overrides={"ply": pl.Int16},
+    )
+    rows = {r["ply"]: r for r in replay_positions(sampled, tmp_path, "2026-08", cfg).to_dicts()}
+
+    # ply 3, exd5: a capture but not a recapture; both earlier moves were untimed first moves.
+    assert (rows[3]["is_capture"], rows[3]["is_recapture"]) == (True, False)
+    assert rows[3]["opp_prev_was_capture"] is False
+    assert (rows[3]["prev_own_time_spent_s"], rows[3]["opp_prev_time_spent_s"]) == (None, None)
+    # ply 4, Qxd5: recaptures on d5 right after White took there (White spent 3 s on it).
+    assert (rows[4]["is_capture"], rows[4]["is_recapture"]) == (True, True)
+    assert rows[4]["opp_prev_was_capture"] is True
+    assert (rows[4]["prev_own_time_spent_s"], rows[4]["opp_prev_time_spent_s"]) == (None, 3)
+    # ply 5, Nc3: quiet move; own previous think 3 s (exd5), opponent just spent 5 s (Qxd5).
+    assert (rows[5]["is_capture"], rows[5]["is_recapture"]) == (False, False)
+    assert rows[5]["opp_prev_was_capture"] is True
+    assert (rows[5]["prev_own_time_spent_s"], rows[5]["opp_prev_time_spent_s"]) == (3, 5)
+    # ply 6, Qa5: own previous think 5 s (Qxd5), opponent just spent 7 s (Nc3).
+    assert rows[6]["opp_prev_was_capture"] is False
+    assert (rows[6]["prev_own_time_spent_s"], rows[6]["opp_prev_time_spent_s"]) == (5, 7)
+
+    board = chess.Board()
+    for san in sans[:3]:
+        board.push_san(san)  # position before ply 4
+    assert rows[4]["n_legal_moves"] == board.legal_moves.count()
+    assert rows[4]["in_check"] is False
