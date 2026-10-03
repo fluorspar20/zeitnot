@@ -23,6 +23,7 @@ import polars as pl
 
 from zeitnot.config import FilterConfig, PipelineConfig, TimeControlConfig, get_settings
 from zeitnot.data.game_filter import KeptGame, filter_game
+from zeitnot.data.parts import part_paths, read_stats, write_atomic_json, write_parquet_atomic
 from zeitnot.data.stream import iter_game_chunks, split_games
 
 log = logging.getLogger(__name__)
@@ -54,17 +55,6 @@ _MONTH_RE = re.compile(r"(\d{4}-\d{2})")
 _ELO_BAND = 100
 
 
-def part_paths(out_dir: Path, index: int) -> tuple[Path, Path]:
-    stem = out_dir / f"part-{index:06d}"
-    return stem.with_suffix(".parquet"), stem.with_suffix(".stats.json")
-
-
-def _write_atomic_json(path: Path, obj: Any) -> None:
-    tmp = path.with_name(path.name + ".tmp")
-    tmp.write_text(json.dumps(obj, indent=1, sort_keys=True), encoding="utf-8")
-    tmp.replace(path)
-
-
 def process_chunk(
     index: int, data: bytes, out_dir: str, filt: FilterConfig, tcs: TimeControlConfig
 ) -> dict[str, Any]:
@@ -87,9 +77,7 @@ def process_chunk(
         {name: [getattr(g, name) for g in kept] for name in SCHEMA}, schema=SCHEMA
     ).with_columns(pl.col("utc_date").str.strptime(pl.Date, "%Y.%m.%d", strict=False))
     parquet, stats_path = part_paths(Path(out_dir), index)
-    tmp = parquet.with_name(parquet.name + ".tmp")
-    df.write_parquet(tmp, compression="zstd")
-    tmp.replace(parquet)
+    write_parquet_atomic(df, parquet)
 
     stats = {
         "index": index,
@@ -101,7 +89,7 @@ def process_chunk(
         "player_games_by_class_band": dict(player_bands),
         "seconds": round(time.perf_counter() - t0, 3),
     }
-    _write_atomic_json(stats_path, stats)
+    write_atomic_json(stats_path, stats)
     return stats
 
 
@@ -117,7 +105,7 @@ def _check_manifest(out_dir: Path, input_path: Path, chunk_mb: int) -> None:
                 "use a fresh output directory or the same settings"
             )
     else:
-        _write_atomic_json(manifest, current)
+        write_atomic_json(manifest, current)
 
 
 def build_report(out_dir: Path, run: dict[str, Any]) -> dict[str, Any]:
@@ -128,8 +116,7 @@ def build_report(out_dir: Path, run: dict[str, Any]) -> dict[str, Any]:
         "player_games_by_class_band": Counter(),
     }
     n_chunks = n_games = n_kept = n_bytes = 0
-    for path in sorted(out_dir.glob("part-*.stats.json")):
-        s = json.loads(path.read_text(encoding="utf-8"))
+    for s in read_stats(out_dir):
         n_chunks += 1
         n_games += s["games"]
         n_kept += s["kept"]
@@ -230,7 +217,7 @@ def run(
         "chunk_mb": chunk_mb,
     }
     report = build_report(out_dir, run_info)
-    _write_atomic_json(out_dir / "_report.json", report)
+    write_atomic_json(out_dir / "_report.json", report)
     (out_dir / "_report.md").write_text(_report_markdown(month, report), encoding="utf-8")
     return report
 

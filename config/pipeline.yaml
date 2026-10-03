@@ -50,6 +50,9 @@ stream:
                             # bottleneck (~80k games/s measured with 3 or 10 workers alike)
   max_in_flight: 8          # chunks queued or running at once; bounds memory
 
+parse:
+  workers: 12               # CPU-bound (python-chess move replay); leave a few cores free
+
 sampling:
   positions_per_game: 3     # k
   min_ply: 10               # opening cutoff for the Trainer pool

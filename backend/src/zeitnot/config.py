@@ -111,6 +111,10 @@ class StreamConfig(_Strict):
     max_in_flight: PositiveInt
 
 
+class ParseConfig(_Strict):
+    workers: PositiveInt
+
+
 class SamplingConfig(_Strict):
     positions_per_game: PositiveInt
     min_ply: int = Field(ge=0)
@@ -184,6 +188,7 @@ class PipelineConfig(_Strict):
     acceptability: AcceptabilityConfig
     filter: FilterConfig
     stream: StreamConfig
+    parse: ParseConfig
     sampling: SamplingConfig
     engine: EngineConfig
     budget: BudgetConfig
