@@ -79,7 +79,10 @@ evaldb:
 
 engine:
   multipv: 5
-  nodes: 1000000            # starting point; measure in 0.11
+  nodes: 1000000            # per position, multi-PV search
+  played_move_nodes: 200000 # second search restricted to the played move when it is not
+                            # among the multi-PV lines (about one line's share of `nodes`)
+  batch_size: 250           # positions per output part (unit of resuming)
   threads_per_worker: 1
   hash_mb_per_worker: 64
   workers: 8

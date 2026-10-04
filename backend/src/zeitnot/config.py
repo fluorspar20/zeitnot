@@ -145,6 +145,8 @@ class EvalDbConfig(_Strict):
 class EngineConfig(_Strict):
     multipv: PositiveInt
     nodes: PositiveInt
+    played_move_nodes: PositiveInt
+    batch_size: PositiveInt
     threads_per_worker: PositiveInt
     hash_mb_per_worker: PositiveInt
     workers: PositiveInt
