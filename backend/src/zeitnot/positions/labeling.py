@@ -36,6 +36,7 @@ from zeitnot.data.parts import (
     write_atomic_json,
     write_parquet_atomic,
 )
+from zeitnot.engine.power import disable_power_throttling
 from zeitnot.engine.stockfish import find_stockfish, open_engine
 from zeitnot.engine.winpct import win_pct
 
@@ -160,7 +161,11 @@ def label_batch(
     """
     t0 = time.perf_counter()
     out = []
+    # Background launches (e.g. Task Scheduler) would otherwise be confined to the CPU's
+    # efficiency cores; opt both this worker and its engine out of power throttling.
+    disable_power_throttling()
     with open_engine(Path(engine_path), engine_cfg) as engine:
+        disable_power_throttling(engine.protocol.transport.get_pid())  # type: ignore[attr-defined]
         for position_id, epd, fen, played_ucis in rows:
             label = label_position(engine, fen, played_ucis, engine_cfg, acc)
             out.append({"position_id": position_id, "epd": epd, **label})
