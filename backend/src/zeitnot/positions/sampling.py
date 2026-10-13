@@ -213,6 +213,7 @@ def replay_positions(
                         board.legal_moves.count(), board.is_check(), is_capture,
                         is_capture and move.to_square == prev_capture_square,
                         prev_capture_square is not None,
+                        ucis[ply - 2] if ply >= 2 else None,
                     )
                 )  # fmt: skip
             if ply == last:
@@ -229,6 +230,7 @@ def replay_positions(
             "prev_own_time_spent_s": pl.Float32, "opp_prev_time_spent_s": pl.Float32,
             "n_legal_moves": pl.Int16, "in_check": pl.Boolean, "is_capture": pl.Boolean,
             "is_recapture": pl.Boolean, "opp_prev_was_capture": pl.Boolean,
+            "opp_prev_uci": pl.String,
         },
         orient="row",
     )  # fmt: skip
@@ -292,6 +294,7 @@ def run(
             "is_capture",
             "is_recapture",
             "opp_prev_was_capture",
+            "opp_prev_uci",
             "rating_band",
             "ply_bucket",
             "stratum_candidates",

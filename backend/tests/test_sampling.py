@@ -218,6 +218,10 @@ def test_decision_context_columns(tmp_path: Path, cfg: PipelineConfig) -> None:
     assert (rows[4]["is_capture"], rows[4]["is_recapture"]) == (True, True)
     assert rows[4]["opp_prev_was_capture"] is True
     assert (rows[4]["prev_own_time_spent_s"], rows[4]["opp_prev_time_spent_s"]) == (None, 3)
+    # The opponent's last move is kept (to show it before the clock starts and to spot
+    # recaptures): before ply 4 White played exd5, before ply 5 Black played Qxd5.
+    assert (rows[3]["opp_prev_uci"], rows[4]["opp_prev_uci"]) == ("d7d5", "e4d5")
+    assert (rows[5]["opp_prev_uci"], rows[6]["opp_prev_uci"]) == ("d8d5", "b1c3")
     # ply 5, Nc3: quiet move; own previous think 3 s (exd5), opponent just spent 5 s (Qxd5).
     assert (rows[5]["is_capture"], rows[5]["is_recapture"]) == (False, False)
     assert rows[5]["opp_prev_was_capture"] is True

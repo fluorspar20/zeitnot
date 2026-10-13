@@ -138,6 +138,19 @@ class SamplingConfig(_Strict):
     target_positions: PositiveInt
 
 
+class CategoriesConfig(_Strict):
+    sharp_max_acceptable: PositiveInt
+    many_min_acceptable: PositiveInt
+    tactical_min_win_pct: float = Field(ge=50, le=100)
+    defensive_max_win_pct: float = Field(ge=0, le=50)
+
+    @model_validator(mode="after")
+    def _check(self) -> Self:
+        if self.sharp_max_acceptable >= self.many_min_acceptable:
+            raise ValueError("categories.sharp_max_acceptable must be < many_min_acceptable")
+        return self
+
+
 class EvalDbConfig(_Strict):
     min_knodes: PositiveInt
 
@@ -211,6 +224,7 @@ class PipelineConfig(_Strict):
     parse: ParseConfig
     puzzles: PuzzlesConfig
     sampling: SamplingConfig
+    categories: CategoriesConfig
     evaldb: EvalDbConfig
     engine: EngineConfig
     budget: BudgetConfig

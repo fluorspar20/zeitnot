@@ -73,6 +73,12 @@ sampling:
   decisive_max_share: 0.15  # placeholder
   target_positions: 200000
 
+categories:                 # rule-based position categories; "acceptable" = within tau of the best
+  sharp_max_acceptable: 2   # at most this many acceptable lines -> few good moves
+  many_min_acceptable: 4    # at least this many of the top lines acceptable -> many good moves
+  tactical_min_win_pct: 60  # few good moves and the best leaves the mover at least this well off
+  defensive_max_win_pct: 40 # few good moves and the best leaves the mover at most this well off
+
 evaldb:
   min_knodes: 1000          # ignore database evals searched with fewer kilo-nodes than this
                             # (our own labels use engine.nodes = 1000 knodes)

@@ -61,6 +61,10 @@ POSITIONS = pl.DataFrame(
         "tc_class": ["blitz", "blitz", "rapid", "blitz"],
         "time_spent_s": [4.0, 9.0, 1.0, 6.0],
         "sampling_weight": [100.0, 300.0, 50.0, 50.0],
+        "n_legal_moves": [20, 20, 1, 4],
+        "phase": ["opening", "opening", "endgame", "endgame"],
+        "opp_prev_was_capture": [False, False, False, True],
+        "opp_prev_uci": ["e7e5", "e7e5", "g6g7", "d6e7"],
     }
 )
 
@@ -91,6 +95,13 @@ def test_loss_y_and_position_features(cfg: PipelineConfig) -> None:
     assert noisy["loss_win_pct"] == pytest.approx(-0.4)  # raw, not clamped
     assert noisy["y"] is True and noisy["position_state"] == "losing"
     assert noisy["gap_1_3"] is None
+
+    # Categories: A has two acceptable lines at 60% -> tactical; B has one legal move;
+    # C: two acceptable lines at 8% -> defensive (its best move e8e7 retakes on e7, but
+    # with two acceptable moves it is not the "single move takes back" case).
+    assert good["category"] == "tactical" and blunder["category"] == "tactical"
+    assert forced["category"] == "forced"
+    assert noisy["category"] == "defensive" and noisy["best_is_recapture"] is True
 
 
 def test_run_report(tmp_path: Path, cfg: PipelineConfig) -> None:

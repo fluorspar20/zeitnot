@@ -21,6 +21,7 @@ import polars as pl
 
 from zeitnot.config import PipelineConfig, get_settings
 from zeitnot.data.parts import write_atomic_json, write_parquet_atomic
+from zeitnot.positions.categories import CATEGORIES, best_is_recapture, category_expr
 
 log = logging.getLogger(__name__)
 
@@ -80,6 +81,10 @@ def build(positions: pl.DataFrame, labels: pl.LazyFrame, cfg: PipelineConfig) ->
             .cast(pl.Enum(STATES))
             .alias("position_state"),
         )
+        .with_columns(
+            best_is_recapture().alias("best_is_recapture"),
+            category_expr(cfg.categories).alias("category"),
+        )
         .collect()
     )
     return out
@@ -129,11 +134,31 @@ def quality_report(
         "played_in_multipv": round(labeled["played_in_multipv"].mean(), 4),  # type: ignore[arg-type]
         "negative_loss_share": round((labeled["loss_win_pct"] < 0).mean(), 4),  # type: ignore[arg-type]
         "by_state": state_share.to_dicts(),
+        "by_category": _by_category(labeled),
         "by_class_band_state": by_band_state.to_dicts(),
     }
     if evaldb is not None:
         report["evaldb_check"] = _evaldb_check(labeled, evaldb, tau)
     return report
+
+
+def _by_category(labeled: pl.DataFrame) -> list[dict[str, Any]]:
+    """Category mix (per distinct position) and how players do in each (balanced positions)."""
+    positions = labeled.unique("position_id")
+    balanced = labeled.filter(pl.col("position_state") == "balanced")
+    mix = positions.group_by("category").agg(
+        (pl.len() / positions.height).round(4).alias("share_of_positions"),
+        ((pl.col("position_state") == "balanced").sum()).alias("balanced_positions"),
+    )
+    perf = balanced.group_by("category").agg(
+        pl.len().alias("balanced_observations"),
+        _weighted_rate("y").alias("y_rate_weighted"),
+        _weighted_rate("is_best").alias("best_rate_weighted"),
+        pl.col("time_spent_s").median().alias("median_t"),
+        pl.col("time_spent_s").quantile(0.9).alias("p90_t"),
+    )
+    out = mix.join(perf, on="category", how="left").to_dicts()
+    return sorted(out, key=lambda r: CATEGORIES.index(r["category"]))
 
 
 def _evaldb_check(labeled: pl.DataFrame, evaldb: pl.DataFrame, tau: float) -> dict[str, Any]:
@@ -181,6 +206,17 @@ def _markdown(r: dict[str, Any]) -> str:
         f"| {s['position_state']} | {s['n']:,} | {s['share_of_sample']:.1%} | "
         f"{s['y_rate_weighted']:.1%} |"
         for s in r["by_state"]
+    ]
+    lines += [
+        "",
+        "| category | share of positions | Y (balanced, weighted) | best move | median T | p90 T |",
+        "|---|---:|---:|---:|---:|---:|",
+    ]
+    lines += [
+        f"| {c['category']} | {c['share_of_positions']:.1%} | {c['y_rate_weighted']:.1%} | "
+        f"{c['best_rate_weighted']:.1%} | {c['median_t']:.0f} | {c['p90_t']:.0f} |"
+        for c in r["by_category"]
+        if c.get("y_rate_weighted") is not None
     ]
     lines += [
         "",
