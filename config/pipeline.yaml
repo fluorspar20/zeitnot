@@ -79,13 +79,16 @@ evaldb:
 
 engine:
   multipv: 5
-  nodes: 1000000            # per position, multi-PV search
-  played_move_nodes: 200000 # second search restricted to the played move when it is not
+  nodes: 500000             # per position, multi-PV search. 1M nodes took twice as long and gave
+                            # the same acceptable/not-acceptable labels (96% agreement with each
+                            # other and with ~100x deeper database evals)
+  played_move_nodes: 100000 # second search restricted to the played move when it is not
                             # among the multi-PV lines (about one line's share of `nodes`)
-  batch_size: 250           # positions per output part (unit of resuming)
+  batch_size: 50            # positions per output part: the unit of resuming, so a stop
+                            # loses at most one batch per worker (~1 min)
   threads_per_worker: 1
   hash_mb_per_worker: 64
-  workers: 8
+  workers: 12               # 12 of 16 threads: 5.2 positions/s at 1M nodes vs 4.4 with 8 workers
 
 budget:
   quantile: 0.5
