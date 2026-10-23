@@ -4,11 +4,13 @@ version = "0.1.0"
 description = "Timed chess trainer: real-game positions with learned per-time-control time budgets."
 requires-python = ">=3.11"
 dependencies = [
+    "alembic>=1.20.1",
     "chess>=1.11.2",
     "polars>=1.44.2",
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
     "pyyaml>=6.0",
+    "sqlalchemy>=2.0",
     "zstandard>=0.25.0",
 ]
 

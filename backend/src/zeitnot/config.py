@@ -227,6 +227,7 @@ PositionState = Literal["losing", "balanced", "winning"]
 
 class TrainerConfig(_Strict):
     position_states: list[PositionState] = Field(min_length=1)
+    default_rating: PositiveInt
 
 
 class PipelineConfig(_Strict):
@@ -274,6 +275,7 @@ class Settings(BaseSettings):
     data_dir: Path | None = None
     pipeline_config: Path | None = None
     stockfish_path: Path | None = None
+    database_url: str | None = None
 
     @model_validator(mode="after")
     def _defaults(self) -> Self:
@@ -281,6 +283,8 @@ class Settings(BaseSettings):
             self.data_dir = self.root_dir / "data"
         if self.pipeline_config is None:
             self.pipeline_config = self.root_dir / "config" / "pipeline.yaml"
+        if self.database_url is None:
+            self.database_url = f"sqlite:///{(self.data_dir / 'app' / 'zeitnot.db').as_posix()}"
         return self
 
     @property

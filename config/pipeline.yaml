@@ -118,3 +118,4 @@ target:
 
 trainer:
   position_states: [balanced]  # serve only positions not already decided
+  default_rating: 1500         # Lichess default for a new user without a rating

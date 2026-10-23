@@ -78,6 +78,15 @@ environment variables or a `.env` file. Engine tests need the official Stockfish
 unzipped into `engines/` (or `ZEITNOT_STOCKFISH_PATH`); they are skipped otherwise.
 Pipeline steps are command-line scripts in `scripts/`.
 
+The app reads a local SQLite database (`data/app/zeitnot.db`, or `ZEITNOT_DATABASE_URL`).
+Build the Trainer's inputs and load them into it:
+
+```
+uv run python ../scripts/build_budgets.py   # time budgets per category, rating and time control
+uv run python ../scripts/build_pool.py      # the positions the Trainer serves
+uv run python ../scripts/load_app_db.py     # apply migrations, load positions and budgets
+```
+
 ## Credits
 
 Game, puzzle and evaluation data: the [Lichess open database](https://database.lichess.org)
