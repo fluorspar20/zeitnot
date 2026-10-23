@@ -106,7 +106,15 @@ budget:
     rapid: {min: 3, max: 180}
   grace_s: 0.5
   rating_grid: {min: 400, max: 3000, step: 50}
+  m0:                       # heuristic baseline: per class x category, around each grid rating
+    exclude_low_clock: true # moves made on a nearly empty clock are rushed, not representative
+    min_successes: 200      # acceptable moves needed in the rating window; widen until reached
+    window_step: 50         # window = grid rating +/- half-width; half-width starts and grows by this
+    max_half_width: 400     # stop widening here (sparse top ratings borrow from neighbours)
 
 target:
   rating_offset: 300        # target rating = user rating + offset
-  source_rating_window: 200
+  source_rating_window: 200 # serve positions from games whose mover was within this of the target
+
+trainer:
+  position_states: [balanced]  # serve only positions not already decided

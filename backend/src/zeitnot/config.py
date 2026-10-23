@@ -191,6 +191,13 @@ class RatingGrid(_Strict):
         return list(range(self.min, self.max + 1, self.step))
 
 
+class M0Config(_Strict):
+    exclude_low_clock: bool
+    min_successes: PositiveInt
+    window_step: PositiveInt
+    max_half_width: PositiveInt
+
+
 class BudgetConfig(_Strict):
     quantile: float = Field(gt=0, lt=1)
     strict_quantile: float = Field(gt=0, lt=1)
@@ -199,6 +206,7 @@ class BudgetConfig(_Strict):
     clip_s: dict[TcClass, ClipRange]
     grace_s: float = Field(ge=0)
     rating_grid: RatingGrid
+    m0: M0Config
 
     @model_validator(mode="after")
     def _check(self) -> Self:
@@ -212,6 +220,13 @@ class BudgetConfig(_Strict):
 class TargetConfig(_Strict):
     rating_offset: int
     source_rating_window: PositiveInt
+
+
+PositionState = Literal["losing", "balanced", "winning"]
+
+
+class TrainerConfig(_Strict):
+    position_states: list[PositionState] = Field(min_length=1)
 
 
 class PipelineConfig(_Strict):
@@ -229,6 +244,7 @@ class PipelineConfig(_Strict):
     engine: EngineConfig
     budget: BudgetConfig
     target: TargetConfig
+    trainer: TrainerConfig
 
     @model_validator(mode="after")
     def _check(self) -> Self:
